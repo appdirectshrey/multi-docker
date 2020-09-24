@@ -1,0 +1,23 @@
+language: generic
+sudo: required
+services:
+    - docker
+
+before_install:
+    - docker build -t shrey7197/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+    - docker run -e CI=true shrey7197/react-test npm run test
+
+after_success:
+    - docker build -t shrey7197/multi-client ./client
+    - docker build -t shrey7197/multi-nginx ./nginx
+    - docker build -t shrey7197/multi-server ./server
+    - docker build -t shrey7197/multi-worker ./worker
+    # Login DOCKER HUB
+    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+    #  Push images to HUB
+    - docker push shrey7197/multi-client
+    - docker push shrey7197/multi-nginx
+    - docker push shrey7197/multi-server
+    - docker push shrey7197/multi-worker 
